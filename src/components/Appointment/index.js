@@ -20,9 +20,12 @@ export default function Appointment(props) {
       student: name,
       interviewer
     };
-    console.log('------',props)
+    
     props.bookInterview(props.id, interview)
-    transition(SHOW);
+    .then (() => {
+      transition(SHOW);
+    })
+    
   }
  
   return (
