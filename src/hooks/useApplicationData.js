@@ -1,7 +1,27 @@
 import {React, useState, useEffect} from 'react';
 import axios from 'axios';
+
+function updateSpots(days, id, value) {
+  days.forEach(day => {
+    if (day.appointments.includes(id)) {
+      day.spots = parseInt(day.spots) + value;
+    }
+  })
+  return days;
+}
+
 export default function useApplicationData() {
-  function bookInterview(id, interview) {
+  
+  const [state, setState] = useState({
+    day: "Monday",
+    days:[],
+    appointments: {},
+    interviewers: {}
+  });
+
+  const setDay = day => setState(prev => ({ ...prev, day }));
+
+  function bookInterview(id, interview, changeSpots) {
     const appointment = {
       ...state.appointments[id],
       interview: { ...interview }
@@ -10,19 +30,20 @@ export default function useApplicationData() {
       ...state.appointments,
       [id]: appointment
     };
-   
     
+    const days = changeSpots ? updateSpots([...state.days], id, -1) : [...state.days];
+    console.log('------', days)
     return axios.put(`/api/appointments/${id}`, {interview})
     .then(response => {
-      setState({
-        ...state,
-        appointments
-      });
+      setState(prev => ( {
+        ...prev,
+        appointments, days
+      }));
     });
 
   }
 
-  function cancelInterview(id) {
+  function cancelInterview(id, changeSpots) {
     const appointmentNull = {
       ...state.appointments[id],
       interview: null
@@ -31,25 +52,19 @@ export default function useApplicationData() {
       ...state.appointments,
       [id]: appointmentNull
     };
+
+    const days = changeSpots ? updateSpots([...state.days], id, 1) : [...state.days];
+    console.log('------', days)
     return axios.delete(`/api/appointments/${id}`)
     .then(() => {
       
-      setState({
-        ...state,
-        appointments
-      });
+      setState(prev => ({
+        ...prev,
+        appointments, days
+      }));
     })
     
   }
-
-  const [state, setState] = useState({
-    day: "Monday",
-    days:[],
-    appointments: {},
-    interviewers: {}
-  });
-
-  const setDay = day => setState({ ...state, day });
 
   useEffect(() => {
     
