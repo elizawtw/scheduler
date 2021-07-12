@@ -3,6 +3,7 @@ import axios from 'axios';
 
 function updateSpots(days, id, value) {
   days.forEach(day => {
+    
     if (day.appointments.includes(id)) {
       day.spots = parseInt(day.spots) + value;
     }
@@ -21,7 +22,7 @@ export default function useApplicationData() {
 
   const setDay = day => setState(prev => ({ ...prev, day }));
 
-  function bookInterview(id, interview, changeSpots) {
+  function bookInterview(id, interview) {
     const appointment = {
       ...state.appointments[id],
       interview: { ...interview }
@@ -31,8 +32,8 @@ export default function useApplicationData() {
       [id]: appointment
     };
     
-    const days = changeSpots ? updateSpots([...state.days], id, -1) : [...state.days];
-    console.log('------', days)
+    // const days = changeSpots ? updateSpots([...state.days], id, -1) : [...state.days];
+    const days = updateSpots([...state.days], id, -1);
     return axios.put(`/api/appointments/${id}`, {interview})
     .then(response => {
       setState(prev => ( {
@@ -43,7 +44,7 @@ export default function useApplicationData() {
 
   }
 
-  function cancelInterview(id, changeSpots) {
+  function cancelInterview(id) {
     const appointmentNull = {
       ...state.appointments[id],
       interview: null
@@ -53,8 +54,8 @@ export default function useApplicationData() {
       [id]: appointmentNull
     };
 
-    const days = changeSpots ? updateSpots([...state.days], id, 1) : [...state.days];
-    console.log('------', days)
+    const days = updateSpots([...state.days], id, 1);
+    
     return axios.delete(`/api/appointments/${id}`)
     .then(() => {
       
