@@ -1,15 +1,6 @@
 import {React, useState, useEffect} from 'react';
 import axios from 'axios';
 
-function updateSpots(days, id, value) {
-  days.forEach(day => {
-    
-    if (day.appointments.includes(id)) {
-      day.spots = parseInt(day.spots) + value;
-    }
-  })
-  return days;
-}
 
 export default function useApplicationData() {
   
@@ -21,6 +12,29 @@ export default function useApplicationData() {
   });
 
   const setDay = day => setState(prev => ({ ...prev, day }));
+  
+  const updateSpots = (incomingState, day) => {
+    
+    const state = { ...incomingState }
+    const currentDay = day || state.day
+  
+    // Find the day the object
+    const currentDayObj = state.days.find(dayObj => dayObj.name === currentDay)
+    const currentDayIndex = state.days.findIndex(dayObj => dayObj.name === currentDay)
+    // Find the appointment id array
+    const listOfAppointmentIds = currentDayObj.appointments
+    // Look for the null interviews in each appointment from the array
+    const listOfNullAppointments = listOfAppointmentIds.filter(id => !state.appointments[id].interview)
+    // Sum them up
+    const spots = listOfNullAppointments.length
+    // update the value of the key 'spots' in the day with the sum I just made
+    const updatedDayObj = { ...currentDayObj, spots }
+  
+    state.days = [...incomingState.days]
+    state.days[currentDayIndex] = updatedDayObj
+    
+    return state
+  }
 
   function bookInterview(id, interview) {
     const appointment = {
@@ -32,14 +46,16 @@ export default function useApplicationData() {
       [id]: appointment
     };
     
-    // const days = changeSpots ? updateSpots([...state.days], id, -1) : [...state.days];
-    const days = updateSpots([...state.days], id, -1);
+    
     return axios.put(`/api/appointments/${id}`, {interview})
     .then(response => {
-      setState(prev => ( {
-        ...prev,
-        appointments, days
-      }));
+      
+      setState(prevState => {
+      const newState = { ...prevState, appointments }
+      const newNewState = updateSpots(newState)
+
+      return newNewState
+  })
     });
 
   }
@@ -54,18 +70,20 @@ export default function useApplicationData() {
       [id]: appointmentNull
     };
 
-    const days = updateSpots([...state.days], id, 1);
+    
     
     return axios.delete(`/api/appointments/${id}`)
     .then(() => {
-      
-      setState(prev => ({
-        ...prev,
-        appointments, days
-      }));
+   
+      setState(prevState => {
+      const newState = { ...prevState, appointments }
+      const newNewState = updateSpots(newState)
+
+      return newNewState
     })
     
-  }
+  })
+}
 
   useEffect(() => {
     
