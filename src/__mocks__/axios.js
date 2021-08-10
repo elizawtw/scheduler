@@ -20,7 +20,7 @@ const fixtures = {
     "2": {
       id: 2,
       time: "1pm",
-      interview: { student: "Archie Cohen", interviewer: 2 }
+      interview: { student: "Archie Cohen", interviewer: 1 }
     },
     "3": {
       id: 3,
@@ -55,7 +55,7 @@ const fixtures = {
 
 export default {
   get: jest.fn(url => {
-    if (url === "/api/days") {
+    if (url === "http://localhost:8001/api/days") {
       return Promise.resolve({
         status: 200,
         statusText: "OK",
@@ -63,7 +63,7 @@ export default {
       });
     }
 
-    if (url === "/api/appointments") {
+    if (url === "http://localhost:8001/api/appointments") {
       /* Resolve appointments data */
       return Promise.resolve({
         status: 200,
@@ -72,7 +72,7 @@ export default {
       })
     }
 
-    if (url === "/api/interviewers") {
+    if (url === "http://localhost:8001/api/interviewers") {
       /* Resolve interviewers data */
       return Promise.resolve({
         status: 200,
